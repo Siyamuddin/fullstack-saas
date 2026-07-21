@@ -7,7 +7,7 @@
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LogContext {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 class Logger {
@@ -27,19 +27,27 @@ class Logger {
    * Send log to external monitoring service
    * Placeholder for integration with services like Sentry, LogRocket, etc.
    */
-  private sendToMonitoring(_level: LogLevel, _message: string, _error?: unknown, _context?: LogContext) {
+  private sendToMonitoring(
+    level: LogLevel,
+    message: string,
+    error?: unknown,
+    context?: LogContext
+  ) {
     // TODO: Integrate with monitoring service
     // Example integrations:
     // - Sentry.captureException(error)
     // - LogRocket.captureMessage(message)
     // - Custom API endpoint for log aggregation
-    
+
     if (this.isDev) {
       return; // Don't send to monitoring in development
     }
 
-    // Placeholder for production monitoring
-    // In production, you would send logs to your monitoring service here
+    // Placeholder for production monitoring — params reserved for future integration
+    void level;
+    void message;
+    void error;
+    void context;
   }
 
   /**
@@ -75,11 +83,14 @@ class Logger {
   error(message: string, error?: unknown, context?: LogContext) {
     const errorContext = {
       ...context,
-      error: error instanceof Error ? {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      } : error,
+      error:
+        error instanceof Error
+          ? {
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+            }
+          : error,
     };
 
     console.error(this.formatMessage('error', message, errorContext));
@@ -96,7 +107,13 @@ class Logger {
   /**
    * Log API response
    */
-  apiResponse(method: string, url: string, status: number, duration?: number, context?: LogContext) {
+  apiResponse(
+    method: string,
+    url: string,
+    status: number,
+    duration?: number,
+    context?: LogContext
+  ) {
     this.debug(`API Response: ${method} ${url} - ${status}`, {
       ...context,
       duration: duration ? `${duration}ms` : undefined,
@@ -151,4 +168,3 @@ export const logWarning = (message: string, context?: LogContext) => {
 export const logDebug = (message: string, context?: LogContext) => {
   logger.debug(message, context);
 };
-

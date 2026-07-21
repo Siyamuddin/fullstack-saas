@@ -34,21 +34,21 @@ export const LoginPage = () => {
     // Clear previous errors first
     setIsLoading(true);
     setLoginError(null);
-    
+
     try {
       await login(data);
       logger.userAction('Login successful', { email: data.email });
       // Redirect to auth-redirect which will handle role-based routing
       navigate('/auth-redirect');
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Keep loading state for a moment to ensure error is visible
       const errorMessage = getErrorMessage(error);
-      
+
       logger.error('Login failed', error, { email: data.email });
-      
+
       // Set error message that will persist until next submission
       setLoginError(errorMessage);
-      
+
       // Specific error handling for better UX
       if (isPasswordError(error) || errorMessage.toLowerCase().includes('credential')) {
         // Highlight password field for password/credential errors
@@ -62,13 +62,17 @@ export const LoginPage = () => {
         });
       } else if (errorMessage.toLowerCase().includes('account is locked')) {
         // Account locked error
-        setLoginError('Your account has been locked due to multiple failed login attempts. Please try again later or contact support.');
+        setLoginError(
+          'Your account has been locked due to multiple failed login attempts. Please try again later or contact support.'
+        );
       } else if (errorMessage.toLowerCase().includes('account is disabled')) {
         // Account disabled error
         setLoginError('Your account has been disabled. Please contact support for assistance.');
       } else if (errorMessage.toLowerCase().includes('email not verified')) {
         // Email not verified error
-        setLoginError('Please verify your email address before logging in. Check your inbox for the verification link.');
+        setLoginError(
+          'Please verify your email address before logging in. Check your inbox for the verification link.'
+        );
       } else if (errorMessage.toLowerCase().includes('not found')) {
         // User not found
         setError('email', {
@@ -76,7 +80,7 @@ export const LoginPage = () => {
           message: 'No account found with this email',
         });
       }
-      
+
       // Ensure loading state is set to false after error is set
       setIsLoading(false);
     }
@@ -88,8 +92,18 @@ export const LoginPage = () => {
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <svg
+                className="w-7 h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
               </svg>
             </div>
           </div>
@@ -98,7 +112,10 @@ export const LoginPage = () => {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-300">
             Or{' '}
-            <Link to="/register" className="font-medium text-blue-400 hover:text-cyan-400 transition-colors">
+            <Link
+              to="/register"
+              className="font-medium text-blue-400 hover:text-cyan-400 transition-colors"
+            >
               create a new account
             </Link>
           </p>
@@ -106,13 +123,22 @@ export const LoginPage = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           {loginError && (
             <div className="bg-red-500/10 border-2 border-red-500/50 rounded-lg p-4 flex items-start space-x-3 animate-shake animate-fadeIn">
-              <svg className="w-6 h-6 text-red-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <svg
+                className="w-6 h-6 text-red-400 mt-0.5 flex-shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
               <div className="flex-1">
                 <p className="text-base font-semibold text-red-300 mb-1">Login Failed</p>
                 <p className="text-sm text-red-400">{loginError}</p>
-                {(loginError.toLowerCase().includes('password') || loginError.toLowerCase().includes('credential')) && (
+                {(loginError.toLowerCase().includes('password') ||
+                  loginError.toLowerCase().includes('credential')) && (
                   <p className="text-xs text-gray-400 mt-2">
                     💡 Tip: Make sure you're using the correct email and password combination.
                   </p>
@@ -120,7 +146,7 @@ export const LoginPage = () => {
               </div>
             </div>
           )}
-          
+
           <div className="space-y-4">
             <FormInput
               label="Email Address"
@@ -130,7 +156,12 @@ export const LoginPage = () => {
               error={errors.email?.message}
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                  />
                 </svg>
               }
               {...register('email')}
@@ -144,7 +175,12 @@ export const LoginPage = () => {
               error={errors.password?.message}
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
                 </svg>
               }
               {...register('password')}
@@ -153,7 +189,10 @@ export const LoginPage = () => {
 
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              <Link to="/forgot-password" className="font-medium text-blue-400 hover:text-cyan-400 transition-colors">
+              <Link
+                to="/forgot-password"
+                className="font-medium text-blue-400 hover:text-cyan-400 transition-colors"
+              >
                 Forgot your password?
               </Link>
             </div>
@@ -168,11 +207,10 @@ export const LoginPage = () => {
           >
             Sign in
           </FormButton>
-          
+
           <GoogleLoginButton />
         </form>
       </div>
     </div>
   );
 };
-

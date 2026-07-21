@@ -30,7 +30,7 @@ const changePasswordSchema = z
       .string()
       .min(8, 'Password must be at least 8 characters')
       .regex(
-        /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!?*~`_\-\[\]{}|\\:;"'<>,./])(?=\S+$).{8,}$/,
+        /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!?*~`_\-[\]{}|\\:;"'<>,./])(?=\S+$).{8,}$/,
         'Password must contain uppercase, lowercase, digit, and special character'
       ),
     confirmPassword: z.string(),
@@ -152,10 +152,7 @@ export function ProfilePage({ variant = 'user' }: ProfilePageProps) {
         },
         onError: (error: unknown) => {
           const errorMessage = getErrorMessage(error);
-          logger.error(
-            isAdmin ? 'Admin password change failed' : 'Password change failed',
-            error
-          );
+          logger.error(isAdmin ? 'Admin password change failed' : 'Password change failed', error);
           setPasswordError(errorMessage);
 
           if (

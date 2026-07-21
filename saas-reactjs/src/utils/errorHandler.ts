@@ -10,26 +10,36 @@ export interface ApiErrorResponse {
   path?: string;
 }
 
+interface ValidationFieldError {
+  field?: string;
+  message?: string;
+  defaultMessage?: string;
+}
+
+interface ValidationErrorResponse extends ApiErrorResponse {
+  errors?: ValidationFieldError[];
+}
+
 /**
  * Extracts a user-friendly error message from an API error response
  */
 export const getErrorMessage = (error: unknown): string => {
   if (error instanceof AxiosError) {
     const response = error.response;
-    
+
     if (response?.data) {
       const data = response.data as ApiErrorResponse;
-      
+
       // Handle specific error messages from backend
       if (data.message) {
         return formatErrorMessage(data.message);
       }
-      
+
       if (data.error) {
         return formatErrorMessage(data.error);
       }
     }
-    
+
     // Handle HTTP status codes
     switch (response?.status) {
       case 400:
@@ -56,11 +66,11 @@ export const getErrorMessage = (error: unknown): string => {
         }
     }
   }
-  
+
   if (error instanceof Error) {
     return formatErrorMessage(error.message);
   }
-  
+
   return 'An unexpected error occurred. Please try again.';
 };
 
@@ -72,43 +82,53 @@ const formatErrorMessage = (message: string): string => {
   const errorMappings: Record<string, string> = {
     // Authentication errors
     'Bad credentials': 'Invalid email or password. Please check your credentials and try again.',
-    'Invalid credentials': 'Invalid email or password. Please check your credentials and try again.',
-    'Username or password is incorrect': 'Invalid email or password. Please check your credentials and try again.',
+    'Invalid credentials':
+      'Invalid email or password. Please check your credentials and try again.',
+    'Username or password is incorrect':
+      'Invalid email or password. Please check your credentials and try again.',
     'Invalid password': 'The password you entered is incorrect. Please try again.',
-    'Current password is incorrect': 'The current password you entered is incorrect. Please verify and try again.',
+    'Current password is incorrect':
+      'The current password you entered is incorrect. Please verify and try again.',
     'Password mismatch': 'The password you entered does not match. Please try again.',
-    
+
     // Account status errors
     'Account is locked': 'Your account has been locked. Please contact support or try again later.',
     'Account is disabled': 'Your account has been disabled. Please contact support for assistance.',
-    'Email not verified': 'Please verify your email address before logging in. Check your inbox for the verification link.',
+    'Email not verified':
+      'Please verify your email address before logging in. Check your inbox for the verification link.',
     'Email already verified': 'This email address has already been verified.',
     'Token expired': 'Your session has expired. Please log in again.',
     'Invalid token': 'The verification link is invalid or has expired. Please request a new one.',
-    
+
     // Validation errors
-    'Email already exists': 'This email address is already registered. Please use a different email or try logging in.',
-    'User already exists': 'An account with this email already exists. Please use a different email or try logging in.',
-    'Password too weak': 'Your password is too weak. Please use a stronger password with uppercase, lowercase, numbers, and special characters.',
-    'Password does not meet requirements': 'Password must contain at least 8 characters with uppercase, lowercase, numbers, and special characters.',
-    
+    'Email already exists':
+      'This email address is already registered. Please use a different email or try logging in.',
+    'User already exists':
+      'An account with this email already exists. Please use a different email or try logging in.',
+    'Password too weak':
+      'Your password is too weak. Please use a stronger password with uppercase, lowercase, numbers, and special characters.',
+    'Password does not meet requirements':
+      'Password must contain at least 8 characters with uppercase, lowercase, numbers, and special characters.',
+
     // File upload errors
     'File too large': 'The file you uploaded is too large. Please choose a smaller file.',
     'Invalid file type': 'The file type is not supported. Please upload a valid image file.',
-    'Failed to upload file': 'Unable to upload the file. Please try again or choose a different file.',
-    
+    'Failed to upload file':
+      'Unable to upload the file. Please try again or choose a different file.',
+
     // General errors
-    'User not found': 'The user account was not found. Please check your information and try again.',
+    'User not found':
+      'The user account was not found. Please check your information and try again.',
     'Resource not found': 'The requested resource was not found.',
     'Operation failed': 'The operation could not be completed. Please try again.',
     'Network error': 'Unable to connect to the server. Please check your internet connection.',
   };
-  
+
   // Check for exact matches first
   if (errorMappings[message]) {
     return errorMappings[message];
   }
-  
+
   // Check for partial matches (case-insensitive)
   const lowerMessage = message.toLowerCase();
   for (const [key, value] of Object.entries(errorMappings)) {
@@ -116,7 +136,7 @@ const formatErrorMessage = (message: string): string => {
       return value;
     }
   }
-  
+
   // Return the original message if no mapping found
   return message;
 };
@@ -189,18 +209,18 @@ export const isAuthError = (error: unknown): boolean => {
  */
 export const getFieldError = (error: unknown, fieldName: string): string | undefined => {
   if (error instanceof AxiosError) {
-    const response = error.response?.data as any;
-    
+    const response = error.response?.data as ValidationErrorResponse | undefined;
+
     // Check for field-specific errors in validation response
     if (response?.errors && Array.isArray(response.errors)) {
-      const fieldError = response.errors.find((err: any) => 
-        err.field === fieldName || err.field?.toLowerCase() === fieldName.toLowerCase()
+      const fieldError = response.errors.find(
+        (err) => err.field === fieldName || err.field?.toLowerCase() === fieldName.toLowerCase()
       );
       if (fieldError) {
-        return formatErrorMessage(fieldError.message || fieldError.defaultMessage);
+        return formatErrorMessage(fieldError.message || fieldError.defaultMessage || '');
       }
     }
-    
+
     // Check for field in message
     if (response?.message) {
       const message = response.message.toLowerCase();
@@ -209,7 +229,6 @@ export const getFieldError = (error: unknown, fieldName: string): string | undef
       }
     }
   }
-  
+
   return undefined;
 };
-

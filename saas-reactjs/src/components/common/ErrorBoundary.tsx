@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- ErrorBoundary exports hook helper alongside component */
 import React, { Component, ReactNode } from 'react';
 import { logger } from '../../utils/logger';
 
@@ -96,9 +97,7 @@ function DefaultErrorUI({ error, onReset }: DefaultErrorUIProps) {
 
         {isDev && error && (
           <div className="mb-6 p-4 bg-slate-900/50 rounded border border-red-500/20">
-            <p className="text-xs font-mono text-red-400 break-all">
-              {error.message}
-            </p>
+            <p className="text-xs font-mono text-red-400 break-all">{error.message}</p>
           </div>
         )}
 
@@ -110,7 +109,7 @@ function DefaultErrorUI({ error, onReset }: DefaultErrorUIProps) {
             Try Again
           </button>
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => (window.location.href = '/')}
             className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors font-medium"
           >
             Go Home
@@ -136,4 +135,3 @@ export const useErrorHandler = () => {
 
   return setError;
 };
-

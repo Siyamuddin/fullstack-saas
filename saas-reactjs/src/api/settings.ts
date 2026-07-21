@@ -90,7 +90,7 @@ export const settingsApi = {
   /**
    * Get settings by category
    */
-  getSettingsByCategory: async (category: string): Promise<any[]> => {
+  getSettingsByCategory: async (category: string): Promise<Record<string, unknown>[]> => {
     const response = await api.get(`/admin/settings/${category}`);
     return response.data;
   },
@@ -122,7 +122,9 @@ export const settingsApi = {
   /**
    * Update file storage settings
    */
-  updateFileStorageSettings: async (settings: FileStorageSettings): Promise<FileStorageSettings> => {
+  updateFileStorageSettings: async (
+    settings: FileStorageSettings
+  ): Promise<FileStorageSettings> => {
     const response = await api.put<FileStorageSettings>('/admin/settings/file-storage', settings);
     return response.data;
   },
@@ -159,4 +161,3 @@ export const settingsApi = {
     return response.data;
   },
 };
-

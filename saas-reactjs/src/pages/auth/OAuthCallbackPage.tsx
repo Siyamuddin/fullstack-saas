@@ -52,25 +52,25 @@ export const OAuthCallbackPage = () => {
       try {
         // Handle OAuth callback and get JWT tokens
         const response = await oauthApi.handleCallback(code, state);
-        
+
         // Store tokens
         if (response.jwtToken && response.refreshToken) {
           storage.setToken(response.jwtToken);
           storage.setRefreshToken(response.refreshToken);
-          
+
           // Extract roles from JWT to determine redirect
           const roles = extractRolesFromToken(response.jwtToken);
           const isAdminUser = isAdmin(roles);
-          
+
           // Load user data and set auth state
           await loadUserAfterOAuth();
-          
+
           setStatus('success');
           logger.userAction('OAuth login successful');
-          
+
           // Clear stored state
           sessionStorage.removeItem('oauth_state');
-          
+
           // Redirect directly to appropriate dashboard based on role
           setTimeout(() => {
             if (isAdminUser) {
@@ -82,7 +82,7 @@ export const OAuthCallbackPage = () => {
         } else {
           throw new Error('No tokens received from OAuth callback');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setStatus('error');
         setErrorMessage('Failed to complete OAuth authentication');
         logger.error('OAuth callback failed', err);
@@ -108,8 +108,18 @@ export const OAuthCallbackPage = () => {
         {status === 'success' && (
           <>
             <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">Sign in successful!</h2>
@@ -120,8 +130,18 @@ export const OAuthCallbackPage = () => {
         {status === 'error' && (
           <>
             <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">Authentication Failed</h2>
@@ -133,4 +153,3 @@ export const OAuthCallbackPage = () => {
     </div>
   );
 };
-

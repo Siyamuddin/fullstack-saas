@@ -18,7 +18,7 @@ export const oauthApi = {
     try {
       const response = await api.get<{ enabled: boolean }>('/auth/oauth/enabled');
       return response.data.enabled;
-    } catch (error) {
+    } catch {
       return false;
     }
   },
@@ -27,7 +27,9 @@ export const oauthApi = {
    * Get Google authorization URL
    */
   getGoogleAuthUrl: async (): Promise<{ authorizationUrl: string; state: string }> => {
-    const response = await api.get<{ authorizationUrl: string; state: string }>('/auth/oauth/google/authorize');
+    const response = await api.get<{ authorizationUrl: string; state: string }>(
+      '/auth/oauth/google/authorize'
+    );
     return response.data;
   },
 
@@ -41,4 +43,3 @@ export const oauthApi = {
     return response.data;
   },
 };
-

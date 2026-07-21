@@ -14,7 +14,7 @@ const resetPasswordSchema = z
       .string()
       .min(8, 'Password must be at least 8 characters')
       .regex(
-        /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!?*~`_\-\[\]{}|\\:;"'<>,./])(?=\S+$).{8,}$/,
+        /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!?*~`_\-[\]{}|\\:;"'<>,./])(?=\S+$).{8,}$/,
         'Password must contain uppercase, lowercase, digit, and special character'
       ),
     confirmPassword: z.string(),
@@ -57,7 +57,7 @@ export const ResetPasswordPage = () => {
 
     setIsLoading(true);
     setResetError(null);
-    
+
     try {
       await authApi.resetPassword(token, data.newPassword);
       setIsSuccess(true);
@@ -66,22 +66,28 @@ export const ResetPasswordPage = () => {
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);
       logger.error('Password reset failed', error);
-      
+
       setResetError(errorMessage);
-      
+
       // Handle specific errors
-      if (errorMessage.toLowerCase().includes('token') && (errorMessage.toLowerCase().includes('invalid') || errorMessage.toLowerCase().includes('expired'))) {
-        setTokenError('This reset link is invalid or has expired. Please request a new password reset.');
+      if (
+        errorMessage.toLowerCase().includes('token') &&
+        (errorMessage.toLowerCase().includes('invalid') ||
+          errorMessage.toLowerCase().includes('expired'))
+      ) {
+        setTokenError(
+          'This reset link is invalid or has expired. Please request a new password reset.'
+        );
       } else if (errorMessage.toLowerCase().includes('password')) {
         setError('newPassword', {
           type: 'manual',
           message: errorMessage,
         });
       }
-      
+
       showErrorToast(error, errorMessage);
     } finally {
       setIsLoading(false);
@@ -120,35 +126,56 @@ export const ResetPasswordPage = () => {
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              <svg
+                className="w-7 h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                />
               </svg>
             </div>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
             Reset your password
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-300">
-            Enter your new password below
-          </p>
+          <p className="mt-2 text-center text-sm text-gray-300">Enter your new password below</p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           {(tokenError || resetError) && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start space-x-3">
-              <svg className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <div className="flex-1">
                 <p className="text-sm font-medium text-red-400">{tokenError || resetError}</p>
                 {tokenError && (
-                  <Link to="/forgot-password" className="text-xs text-blue-400 hover:text-cyan-400 mt-2 inline-block">
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs text-blue-400 hover:text-cyan-400 mt-2 inline-block"
+                  >
                     Request a new reset link →
                   </Link>
                 )}
               </div>
             </div>
           )}
-          
+
           <div className="space-y-4">
             <FormInput
               label="New Password"
@@ -160,7 +187,12 @@ export const ResetPasswordPage = () => {
               required
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
                 </svg>
               }
               {...register('newPassword')}
@@ -175,7 +207,12 @@ export const ResetPasswordPage = () => {
               required
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               }
               {...register('confirmPassword')}
@@ -194,7 +231,10 @@ export const ResetPasswordPage = () => {
           </FormButton>
 
           <div className="text-center">
-            <Link to="/login" className="text-sm text-blue-400 hover:text-cyan-400 transition-colors">
+            <Link
+              to="/login"
+              className="text-sm text-blue-400 hover:text-cyan-400 transition-colors"
+            >
               Back to login
             </Link>
           </div>
@@ -203,4 +243,3 @@ export const ResetPasswordPage = () => {
     </div>
   );
 };
-

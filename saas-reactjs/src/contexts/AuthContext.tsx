@@ -24,6 +24,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook colocated with provider is intentional
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -70,38 +71,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const login = async (credentials: JwtRequest) => {
-    try {
-      const response = await authApi.login(credentials);
-      storage.setToken(response.jwtToken);
-      storage.setRefreshToken(response.refreshToken);
+    // Errors propagate to LoginPage for display (avoids double toasts)
+    const response = await authApi.login(credentials);
+    storage.setToken(response.jwtToken);
+    storage.setRefreshToken(response.refreshToken);
 
-      // Extract roles from token
-      const tokenRoles = extractRolesFromToken(response.jwtToken);
-      setRoles(tokenRoles);
+    // Extract roles from token
+    const tokenRoles = extractRolesFromToken(response.jwtToken);
+    setRoles(tokenRoles);
 
-      // Load user data
-      const userData = await usersApi.getCurrentUser();
-      setUser(userData);
-      storage.setUser(userData);
+    // Load user data
+    const userData = await usersApi.getCurrentUser();
+    setUser(userData);
+    storage.setUser(userData);
 
-      logger.userAction('Login', { userId: userData.id, email: userData.email });
-      showSuccessToast(SUCCESS_MESSAGES.login);
-    } catch (error) {
-      // Don't show toast here - let the LoginPage component handle error display
-      // This prevents double error notifications and ensures error banner stays visible
-      throw error;
-    }
+    logger.userAction('Login', { userId: userData.id, email: userData.email });
+    showSuccessToast(SUCCESS_MESSAGES.login);
   };
 
   const register = async (data: RegisterData) => {
-    try {
-      await authApi.register(data);
-      logger.userAction('Register', { email: data.email });
-      showSuccessToast(SUCCESS_MESSAGES.register);
-    } catch (error) {
-      // Don't show toast here - let the RegisterPage component handle error display
-      throw error;
-    }
+    // Errors propagate to RegisterPage for display
+    await authApi.register(data);
+    logger.userAction('Register', { email: data.email });
+    showSuccessToast(SUCCESS_MESSAGES.register);
   };
 
   const logout = async () => {
