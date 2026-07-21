@@ -72,6 +72,7 @@ export const MENU_ITEMS = {
   user: [
     { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
     { path: '/profile', label: 'Profile', icon: '👤' },
+    { path: '/sessions', label: 'Sessions', icon: '🔐' },
     { path: '/change-password', label: 'Change Password', icon: '🔒' },
   ],
 } as const;

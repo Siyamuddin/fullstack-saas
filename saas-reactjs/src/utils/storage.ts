@@ -1,3 +1,5 @@
+import { UserDto } from '../types/user';
+
 const TOKEN_KEY = 'access_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 const USER_KEY = 'user';
@@ -27,12 +29,17 @@ export const storage = {
     localStorage.removeItem(REFRESH_TOKEN_KEY);
   },
 
-  getUser: (): any | null => {
+  getUser: (): UserDto | null => {
     const user = localStorage.getItem(USER_KEY);
-    return user ? JSON.parse(user) : null;
+    if (!user) return null;
+    try {
+      return JSON.parse(user) as UserDto;
+    } catch {
+      return null;
+    }
   },
 
-  setUser: (user: any): void => {
+  setUser: (user: UserDto): void => {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
 
@@ -46,4 +53,3 @@ export const storage = {
     localStorage.removeItem(USER_KEY);
   },
 };
-

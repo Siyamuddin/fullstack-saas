@@ -8,8 +8,8 @@ export const authApi = {
     return response.data;
   },
 
-  register: async (data: RegisterData): Promise<any> => {
-    const response = await api.post('/auth/register', data);
+  register: async (data: RegisterData): Promise<ApiResponse> => {
+    const response = await api.post<ApiResponse>('/auth/register', data);
     return response.data;
   },
 

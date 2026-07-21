@@ -13,12 +13,12 @@ export const queryClient = new QueryClient({
       // Cache configuration
       staleTime: 5 * 60 * 1000, // Data is fresh for 5 minutes
       gcTime: 10 * 60 * 1000, // Keep unused data in cache for 10 minutes (formerly cacheTime)
-      
+
       // Refetch configuration
       refetchOnWindowFocus: false, // Don't refetch on window focus (can be enabled per query)
       refetchOnReconnect: true, // Refetch when connection is restored
       refetchOnMount: true, // Refetch when component mounts
-      
+
       // Retry configuration
       retry: (failureCount, error) => {
         // Don't retry on 404 or 401 errors
@@ -43,13 +43,20 @@ export const queryClient = new QueryClient({
         // Queries handle their own errors in components
         showErrorToast(error);
       },
-      
+
       // Retry failed mutations once
       retry: 1,
       retryDelay: 1000,
     },
   },
 });
+
+export type UserListFilters = {
+  pageNumber: number;
+  pageSize: number;
+  sortBy: string;
+  sortDirec: string;
+};
 
 /**
  * Query keys factory for consistent query key management
@@ -59,24 +66,31 @@ export const queryKeys = {
   users: {
     all: ['users'] as const,
     lists: () => [...queryKeys.users.all, 'list'] as const,
-    list: (filters: Record<string, any>) => [...queryKeys.users.lists(), filters] as const,
+    list: (filters: UserListFilters) => [...queryKeys.users.lists(), filters] as const,
     details: () => [...queryKeys.users.all, 'detail'] as const,
     detail: (id: number) => [...queryKeys.users.details(), id] as const,
     current: () => [...queryKeys.users.all, 'current'] as const,
     search: (query: string) => [...queryKeys.users.all, 'search', query] as const,
   },
-  
+
   // Session queries
   sessions: {
     all: ['sessions'] as const,
     current: () => [...queryKeys.sessions.all, 'current'] as const,
     list: () => [...queryKeys.sessions.all, 'list'] as const,
   },
-  
+
   // Auth queries
   auth: {
     all: ['auth'] as const,
     user: () => [...queryKeys.auth.all, 'user'] as const,
+  },
+
+  // Settings queries
+  settings: {
+    all: ['settings'] as const,
+    allSettings: () => [...queryKeys.settings.all, 'all'] as const,
+    category: (category: string) => [...queryKeys.settings.all, 'category', category] as const,
   },
 } as const;
 
@@ -95,3 +109,6 @@ export const invalidateAuthQueries = () => {
   queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
 };
 
+export const invalidateSettingsQueries = () => {
+  queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
+};

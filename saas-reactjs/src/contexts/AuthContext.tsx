@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authApi } from '../api/auth';
 import { usersApi } from '../api/users';
 import { storage } from '../utils/storage';
 import { extractRolesFromToken, isAdmin } from '../utils/roles';
 import { UserDto } from '../types/user';
-import { JwtRequest } from '../types/auth';
+import { JwtRequest, RegisterData } from '../types/auth';
 import { showSuccessToast } from '../utils/errorHandler';
 import { logger } from '../utils/logger';
 import { SUCCESS_MESSAGES } from '../config';
@@ -16,7 +16,7 @@ interface AuthContextType {
   isAdminUser: boolean;
   isLoading: boolean;
   login: (credentials: JwtRequest) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   loadUserAfterOAuth: () => Promise<void>;
@@ -36,7 +36,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserDto | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const userData = await usersApi.getCurrentUser();
       setUser(userData);
-      
+
       // Extract roles from token
       const tokenRoles = extractRolesFromToken(token);
       setRoles(tokenRoles);
@@ -86,19 +86,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       logger.userAction('Login', { userId: userData.id, email: userData.email });
       showSuccessToast(SUCCESS_MESSAGES.login);
-    } catch (error: any) {
+    } catch (error) {
       // Don't show toast here - let the LoginPage component handle error display
       // This prevents double error notifications and ensures error banner stays visible
       throw error;
     }
   };
 
-  const register = async (data: any) => {
+  const register = async (data: RegisterData) => {
     try {
       await authApi.register(data);
       logger.userAction('Register', { email: data.email });
       showSuccessToast(SUCCESS_MESSAGES.register);
-    } catch (error: any) {
+    } catch (error) {
       // Don't show toast here - let the RegisterPage component handle error display
       throw error;
     }
@@ -147,7 +147,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       logger.userAction('OAuth Login', { userId: userData.id, email: userData.email });
       showSuccessToast(SUCCESS_MESSAGES.login);
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error loading user after OAuth', error);
       storage.clear();
       setUser(null);
@@ -170,5 +170,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
+}

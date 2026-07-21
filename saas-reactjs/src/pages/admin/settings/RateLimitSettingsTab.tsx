@@ -22,7 +22,7 @@ interface RateLimitSettingsTabProps {
   onUnsavedChanges: (hasChanges: boolean) => void;
 }
 
-export const RateLimitSettingsTab: React.FC<RateLimitSettingsTabProps> = ({ settings, onUnsavedChanges }) => {
+export function RateLimitSettingsTab({ settings, onUnsavedChanges }: RateLimitSettingsTabProps) {
   const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<RateLimitSettings>({
     resolver: zodResolver(rateLimitSchema),
     defaultValues: settings,
@@ -129,5 +129,4 @@ export const RateLimitSettingsTab: React.FC<RateLimitSettingsTabProps> = ({ sett
       </div>
     </form>
   );
-};
-
+}

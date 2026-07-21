@@ -26,7 +26,7 @@ interface SecuritySettingsTabProps {
   onUnsavedChanges: (hasChanges: boolean) => void;
 }
 
-export const SecuritySettingsTab: React.FC<SecuritySettingsTabProps> = ({ settings, onUnsavedChanges }) => {
+export function SecuritySettingsTab({ settings, onUnsavedChanges }: SecuritySettingsTabProps) {
   const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<SecuritySettings>({
     resolver: zodResolver(securitySchema),
     defaultValues: settings,
@@ -189,5 +189,4 @@ export const SecuritySettingsTab: React.FC<SecuritySettingsTabProps> = ({ settin
       </div>
     </form>
   );
-};
-
+}

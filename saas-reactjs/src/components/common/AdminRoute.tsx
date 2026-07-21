@@ -1,12 +1,7 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { ReactNode } from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface AdminRouteProps {
-  children: ReactNode;
-}
-
-export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
+export function AdminRoute() {
   const { isAuthenticated, isAdminUser, isLoading } = useAuth();
 
   if (isLoading) {
@@ -25,6 +20,5 @@ export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <>{children}</>;
-};
-
+  return <Outlet />;
+}

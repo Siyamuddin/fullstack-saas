@@ -1,14 +1,10 @@
-import { ReactNode, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useState } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { AppLogo, UserAvatar, LogoutButton } from './shared';
-import { MENU_ITEMS } from '../../config';
+import { MENU_ITEMS } from '@/config';
 
-interface AdminLayoutProps {
-  children: ReactNode;
-}
-
-export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+export function AdminLayout() {
   const { user } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -91,7 +87,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </div>
 
         {/* Page content */}
-        <main className="p-6">{children}</main>
+        <main className="p-6">
+          <Outlet />
+        </main>
       </div>
 
       {/* Overlay for mobile */}
@@ -103,5 +101,4 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       )}
     </div>
   );
-};
-
+}

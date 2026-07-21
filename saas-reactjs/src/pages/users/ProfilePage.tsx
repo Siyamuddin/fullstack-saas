@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { usersApi } from '../../api/users';
-import { useAuth } from '../../contexts/AuthContext';
-import { getErrorMessage, showErrorToast, showSuccessToast } from '../../utils/errorHandler';
-import { logger } from '../../utils/logger';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  useCurrentUser,
+  useUpdateCurrentUser,
+  useDeleteMyAccount,
+  useChangePassword,
+  useUploadProfilePhoto,
+} from '@/hooks';
+import { getErrorMessage } from '@/utils/errorHandler';
+import { logger } from '@/utils/logger';
+import { UserDto } from '@/types/user';
 
 const profileSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters').max(100, 'Name too long'),
   email: z.string().email('Invalid email address'),
   about: z.string().max(500, 'About must not exceed 500 characters').optional(),
 });
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 const changePasswordSchema = z
   .object({
@@ -32,177 +40,173 @@ const changePasswordSchema = z
     path: ['confirmPassword'],
   });
 
-export const ProfilePage = () => {
+type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+
+export type ProfileVariant = 'admin' | 'user';
+
+interface ProfilePageProps {
+  variant?: ProfileVariant;
+}
+
+export function ProfilePage({ variant = 'user' }: ProfilePageProps) {
+  const isAdmin = variant === 'admin';
   const { user, refreshUser, logout } = useAuth();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  const { data: currentUser } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => usersApi.getCurrentUser(),
-    initialData: user || undefined,
-  });
+  const { data: currentUser } = useCurrentUser();
+  const displayUser = currentUser ?? user ?? undefined;
 
-  const updateMutation = useMutation({
-    mutationFn: (data: any) => usersApi.updateCurrentUser(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['current-user'] });
-      refreshUser();
-      setIsEditing(false);
-      logger.userAction('Profile updated');
-      showSuccessToast('Profile updated successfully');
-    },
-    onError: (error: any) => {
-      logger.error('Profile update failed', error);
-      showErrorToast(error, 'Failed to update profile. Please try again.');
-    },
-  });
+  const updateMutation = useUpdateCurrentUser();
+  const deleteAccountMutation = useDeleteMyAccount();
+  const changePasswordMutation = useChangePassword();
+  const uploadPhotoMutation = useUploadProfilePhoto();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm({
+  } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
-    defaultValues: currentUser,
+    defaultValues: displayUser
+      ? {
+          name: displayUser.name,
+          email: displayUser.email,
+          about: displayUser.about,
+        }
+      : undefined,
   });
 
-  React.useEffect(() => {
-    if (currentUser) {
-      reset(currentUser);
+  useEffect(() => {
+    if (displayUser) {
+      reset({
+        name: displayUser.name,
+        email: displayUser.email,
+        about: displayUser.about,
+      });
     }
-  }, [currentUser, reset]);
+  }, [displayUser, reset]);
 
-  const onSubmit = (data: any) => {
-    updateMutation.mutate(data);
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      showErrorToast(new Error('File size must be less than 5MB'));
-      return;
-    }
-
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      showErrorToast(new Error('Please upload a valid image file (JPG, PNG, GIF, or WebP)'));
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      await usersApi.uploadMyProfilePhoto(file);
-      queryClient.invalidateQueries({ queryKey: ['current-user'] });
-      refreshUser();
-      logger.userAction('Profile photo uploaded', { fileType: file.type, fileSize: file.size });
-      showSuccessToast('Profile photo updated successfully');
-    } catch (error: any) {
-      logger.error('Profile photo upload failed', error);
-      showErrorToast(error, 'Failed to upload profile photo. Please try again.');
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const deleteAccountMutation = useMutation({
-    mutationFn: () => usersApi.deleteMyAccount(),
-    onSuccess: async () => {
-      logger.userAction('Account deleted');
-      showSuccessToast('Your account has been deleted successfully');
-      await logout();
-      navigate('/');
-    },
-    onError: (error: any) => {
-      logger.error('Account deletion failed', error);
-      showErrorToast(error, 'Failed to delete account. Please try again or contact support.');
-    },
-  });
-
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-
-  const changePasswordMutation = useMutation({
-    mutationFn: ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) =>
-      usersApi.changePassword(currentPassword, newPassword),
-    onSuccess: () => {
-      logger.userAction('Password changed via profile');
-      showSuccessToast('Password changed successfully');
-      setShowChangePassword(false);
-      passwordForm.reset();
-      setPasswordError(null);
-    },
-    onError: (error: any) => {
-      const errorMessage = getErrorMessage(error);
-      logger.error('Password change failed', error);
-      setPasswordError(errorMessage);
-      
-      // Handle specific errors
-      if (errorMessage.toLowerCase().includes('current password') || 
-          (errorMessage.toLowerCase().includes('password') && errorMessage.toLowerCase().includes('incorrect'))) {
-        passwordForm.setError('currentPassword', {
-          type: 'manual',
-          message: 'The current password is incorrect',
-        });
-      } else if (errorMessage.toLowerCase().includes('same as') || errorMessage.toLowerCase().includes('cannot use the same')) {
-        passwordForm.setError('newPassword', {
-          type: 'manual',
-          message: 'New password must be different from current password',
-        });
-      }
-      
-      showErrorToast(error, errorMessage);
-    },
-  });
-
-  const passwordForm = useForm({
+  const passwordForm = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
   });
 
+  const onSubmit = (data: ProfileFormData) => {
+    updateMutation.mutate(data as Partial<UserDto>, {
+      onSuccess: () => {
+        refreshUser();
+        setIsEditing(false);
+        logger.userAction(isAdmin ? 'Admin profile updated' : 'Profile updated');
+      },
+    });
+  };
+
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    uploadPhotoMutation.mutate(file, {
+      onSuccess: () => {
+        refreshUser();
+        logger.userAction(isAdmin ? 'Admin profile photo uploaded' : 'Profile photo uploaded', {
+          fileType: file.type,
+          fileSize: file.size,
+        });
+      },
+    });
+  };
+
   const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone. All your data will be permanently deleted.')) {
-      deleteAccountMutation.mutate();
+    if (
+      window.confirm(
+        'Are you sure you want to delete your account? This action cannot be undone. All your data will be permanently deleted.'
+      )
+    ) {
+      deleteAccountMutation.mutate(undefined, {
+        onSuccess: async () => {
+          logger.userAction(isAdmin ? 'Admin account deleted' : 'Account deleted');
+          await logout();
+          navigate('/');
+        },
+      });
     }
   };
 
-  const onSubmitPassword = (data: {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-  }) => {
-    changePasswordMutation.mutate({
-      currentPassword: data.currentPassword,
-      newPassword: data.newPassword,
-    });
+  const onSubmitPassword = (data: ChangePasswordFormData) => {
+    changePasswordMutation.mutate(
+      {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      },
+      {
+        onSuccess: () => {
+          logger.userAction(
+            isAdmin ? 'Admin password changed via profile' : 'Password changed via profile'
+          );
+          setShowChangePassword(false);
+          passwordForm.reset();
+          setPasswordError(null);
+        },
+        onError: (error: unknown) => {
+          const errorMessage = getErrorMessage(error);
+          logger.error(
+            isAdmin ? 'Admin password change failed' : 'Password change failed',
+            error
+          );
+          setPasswordError(errorMessage);
+
+          if (
+            errorMessage.toLowerCase().includes('current password') ||
+            (errorMessage.toLowerCase().includes('password') &&
+              errorMessage.toLowerCase().includes('incorrect'))
+          ) {
+            passwordForm.setError('currentPassword', {
+              type: 'manual',
+              message: 'The current password is incorrect',
+            });
+          } else if (
+            errorMessage.toLowerCase().includes('same as') ||
+            errorMessage.toLowerCase().includes('cannot use the same')
+          ) {
+            passwordForm.setError('newPassword', {
+              type: 'manual',
+              message: 'New password must be different from current password',
+            });
+          }
+
+          // Field-level errors set above; hook shows the toast
+        },
+      }
+    );
   };
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">My Profile</h1>
-        <p className="mt-2 text-gray-300">Manage your profile information</p>
+        <h1 className="text-3xl font-bold text-white">
+          {isAdmin ? 'Admin Profile' : 'My Profile'}
+        </h1>
+        <p className="mt-2 text-gray-300">
+          {isAdmin ? 'Manage your admin profile' : 'Manage your profile information'}
+        </p>
       </div>
 
       <div className="bg-slate-800/50 backdrop-blur-sm border border-blue-500/20 rounded-xl shadow-xl p-6">
         <div className="flex items-start space-x-6">
           <div className="relative">
-            {currentUser?.profileImageUrl ? (
+            {displayUser?.profileImageUrl ? (
               <img
-                src={currentUser.profileImageUrl}
-                alt={currentUser.name}
+                src={displayUser.profileImageUrl}
+                alt={displayUser.name}
                 className="w-32 h-32 rounded-full border-2 border-blue-500/30"
               />
             ) : (
               <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center border-2 border-blue-500/30">
                 <span className="text-white text-4xl font-semibold">
-                  {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+                  {displayUser?.name?.charAt(0).toUpperCase() || (isAdmin ? 'A' : 'U')}
                 </span>
               </div>
             )}
@@ -211,7 +215,7 @@ export const ProfilePage = () => {
                 type="file"
                 accept="image/*"
                 onChange={handleFileUpload}
-                disabled={isUploading}
+                disabled={uploadPhotoMutation.isPending}
                 className="hidden"
               />
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -282,7 +286,13 @@ export const ProfilePage = () => {
                     type="button"
                     onClick={() => {
                       setIsEditing(false);
-                      reset(currentUser);
+                      if (displayUser) {
+                        reset({
+                          name: displayUser.name,
+                          email: displayUser.email,
+                          about: displayUser.about,
+                        });
+                      }
                     }}
                     className="px-4 py-2 bg-slate-700/50 text-gray-300 rounded-lg hover:bg-slate-700 transition-colors border border-blue-500/20"
                   >
@@ -292,12 +302,20 @@ export const ProfilePage = () => {
               </form>
             ) : (
               <>
-                <h2 className="text-2xl font-semibold text-white mb-2">
-                  {currentUser?.name}
-                </h2>
-                <p className="text-gray-300 mb-4">{currentUser?.email}</p>
-                {currentUser?.about && (
-                  <p className="text-gray-300 mb-4">{currentUser.about}</p>
+                <h2 className="text-2xl font-semibold text-white mb-2">{displayUser?.name}</h2>
+                <p className="text-gray-300 mb-4">{displayUser?.email}</p>
+                {displayUser?.about && <p className="text-gray-300 mb-4">{displayUser.about}</p>}
+                {isAdmin && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {displayUser?.roles?.map((role) => (
+                      <span
+                        key={role.id}
+                        className="px-3 py-1 text-sm rounded-full bg-gradient-to-r from-blue-600/30 to-cyan-600/30 text-blue-300 border border-blue-500/30"
+                      >
+                        {role.name}
+                      </span>
+                    ))}
+                  </div>
                 )}
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
@@ -326,7 +344,6 @@ export const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Change Password Modal */}
       {showChangePassword && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-slate-800/95 backdrop-blur-sm border border-blue-500/20 rounded-xl shadow-xl p-6 max-w-md w-full">
@@ -336,11 +353,17 @@ export const ProfilePage = () => {
                 onClick={() => {
                   setShowChangePassword(false);
                   passwordForm.reset();
+                  setPasswordError(null);
                 }}
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -348,27 +371,47 @@ export const ProfilePage = () => {
             <form onSubmit={passwordForm.handleSubmit(onSubmitPassword)} className="space-y-4">
               {passwordError && (
                 <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-start space-x-2">
-                  <svg className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   <p className="text-sm text-red-400 flex-1">{passwordError}</p>
                 </div>
               )}
               <div>
-                <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-300 mb-1">
+                <label
+                  htmlFor="currentPassword"
+                  className="block text-sm font-medium text-gray-300 mb-1"
+                >
                   Current Password
                 </label>
                 <input
                   {...passwordForm.register('currentPassword')}
                   type="password"
                   className={`w-full px-3 py-2 bg-slate-700/50 border ${
-                    passwordForm.formState.errors.currentPassword || passwordError ? 'border-red-500/50' : 'border-blue-500/30'
+                    passwordForm.formState.errors.currentPassword || passwordError
+                      ? 'border-red-500/50'
+                      : 'border-blue-500/30'
                   } text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                 />
                 {passwordForm.formState.errors.currentPassword && (
                   <p className="mt-1 text-sm text-red-400 flex items-center space-x-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                     <span>{passwordForm.formState.errors.currentPassword.message}</span>
                   </p>
@@ -376,7 +419,10 @@ export const ProfilePage = () => {
               </div>
 
               <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-300 mb-1">
+                <label
+                  htmlFor="newPassword"
+                  className="block text-sm font-medium text-gray-300 mb-1"
+                >
                   New Password
                 </label>
                 <input
@@ -392,7 +438,10 @@ export const ProfilePage = () => {
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-1">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-gray-300 mb-1"
+                >
                   Confirm New Password
                 </label>
                 <input
@@ -415,22 +464,22 @@ export const ProfilePage = () => {
                 >
                   {changePasswordMutation.isPending ? 'Changing...' : 'Change Password'}
                 </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowChangePassword(false);
-                  passwordForm.reset();
-                  setPasswordError(null);
-                }}
-                className="px-4 py-2 bg-slate-700/50 text-gray-300 rounded-lg hover:bg-slate-700 transition-colors border border-blue-500/20"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowChangePassword(false);
+                    passwordForm.reset();
+                    setPasswordError(null);
+                  }}
+                  className="px-4 py-2 bg-slate-700/50 text-gray-300 rounded-lg hover:bg-slate-700 transition-colors border border-blue-500/20"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    )}
+      )}
     </div>
   );
-};
+}

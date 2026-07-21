@@ -20,7 +20,7 @@ interface OAuthSettingsTabProps {
   onUnsavedChanges: (hasChanges: boolean) => void;
 }
 
-export const OAuthSettingsTab: React.FC<OAuthSettingsTabProps> = ({ settings, onUnsavedChanges }) => {
+export function OAuthSettingsTab({ settings, onUnsavedChanges }: OAuthSettingsTabProps) {
   const [showClientSecret, setShowClientSecret] = useState(false);
   const [isSecretChanged, setIsSecretChanged] = useState(false);
 
@@ -252,5 +252,4 @@ export const OAuthSettingsTab: React.FC<OAuthSettingsTabProps> = ({ settings, on
       </div>
     </form>
   );
-};
-
+}

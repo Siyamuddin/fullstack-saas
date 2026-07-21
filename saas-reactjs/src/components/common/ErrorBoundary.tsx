@@ -66,7 +66,7 @@ interface DefaultErrorUIProps {
   onReset: () => void;
 }
 
-const DefaultErrorUI: React.FC<DefaultErrorUIProps> = ({ error, onReset }) => {
+function DefaultErrorUI({ error, onReset }: DefaultErrorUIProps) {
   const isDev = import.meta.env.DEV;
 
   return (
@@ -119,7 +119,7 @@ const DefaultErrorUI: React.FC<DefaultErrorUIProps> = ({ error, onReset }) => {
       </div>
     </div>
   );
-};
+}
 
 /**
  * Hook-based error boundary (for functional components)

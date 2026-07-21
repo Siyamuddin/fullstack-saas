@@ -6,5 +6,13 @@
 export * from './constants';
 export * from './theme';
 export * from './routes';
-export { queryClient, queryKeys, invalidateUserQueries, invalidateSessionQueries, invalidateAuthQueries } from './queryClient';
+export {
+  queryClient,
+  queryKeys,
+  invalidateUserQueries,
+  invalidateSessionQueries,
+  invalidateAuthQueries,
+  invalidateSettingsQueries,
+} from './queryClient';
+export type { UserListFilters } from './queryClient';
 
