@@ -1,12 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { usersApi } from '../../api/users';
 import { Link } from 'react-router-dom';
+import { useUsers } from '@/hooks';
 
-export const AdminDashboard = () => {
-  const { data: usersData, isLoading } = useQuery({
-    queryKey: ['users', 0, 10, 'id', 'asc'],
-    queryFn: () => usersApi.getAllUsers(0, 10, 'id', 'asc'),
-  });
+export function AdminDashboard() {
+  const { data: usersData, isLoading } = useUsers(0, 10, 'id', 'asc');
 
   const stats = [
     {
@@ -39,13 +35,18 @@ export const AdminDashboard = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {stats.map((stat) => (
-          <div key={stat.name} className="bg-slate-800/50 backdrop-blur-sm border border-blue-500/20 rounded-xl shadow-xl p-6">
+          <div
+            key={stat.name}
+            className="bg-slate-800/50 backdrop-blur-sm border border-blue-500/20 rounded-xl shadow-xl p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-300">{stat.name}</p>
                 <p className="mt-2 text-3xl font-bold text-white">{stat.value}</p>
               </div>
-              <div className={`w-12 h-12 bg-gradient-to-br ${stat.gradient} rounded-lg flex items-center justify-center text-2xl`}>
+              <div
+                className={`w-12 h-12 bg-gradient-to-br ${stat.gradient} rounded-lg flex items-center justify-center text-2xl`}
+              >
                 {stat.icon}
               </div>
             </div>
@@ -137,4 +138,4 @@ export const AdminDashboard = () => {
       </div>
     </div>
   );
-};
+}

@@ -18,7 +18,7 @@ const registerSchema = z
       .string()
       .min(8, 'Password must be at least 8 characters')
       .regex(
-        /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!?*~`_\-\[\]{}|\\:;"'<>,./])(?=\S+$).{8,}$/,
+        /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!?*~`_\-[\]{}|\\:;"'<>,./])(?=\S+$).{8,}$/,
         'Password must contain uppercase, lowercase, digit, and special character'
       ),
     confirmPassword: z.string(),
@@ -47,19 +47,24 @@ export const RegisterPage = () => {
   const onSubmit = async (data: RegisterData & { confirmPassword: string }) => {
     setIsLoading(true);
     setRegisterError(null);
-    
+
     try {
-      const { confirmPassword, ...registerData } = data;
+      const registerData: RegisterData = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        about: data.about,
+      };
       await registerUser(registerData);
       logger.userAction('Registration successful', { email: data.email });
       navigate('/login');
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);
       logger.error('Registration failed', error, { email: data.email });
-      
+
       // Set general error message
       setRegisterError(errorMessage);
-      
+
       // Handle field-specific errors
       const emailError = getFieldError(error, 'email');
       if (emailError || errorMessage.toLowerCase().includes('email already exists')) {
@@ -68,7 +73,7 @@ export const RegisterPage = () => {
           message: emailError || 'This email is already registered',
         });
       }
-      
+
       const nameError = getFieldError(error, 'name');
       if (nameError) {
         setError('name', {
@@ -76,7 +81,7 @@ export const RegisterPage = () => {
           message: nameError,
         });
       }
-      
+
       const passwordError = getFieldError(error, 'password');
       if (passwordError) {
         setError('password', {
@@ -95,8 +100,18 @@ export const RegisterPage = () => {
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              <svg
+                className="w-7 h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                />
               </svg>
             </div>
           </div>
@@ -105,7 +120,10 @@ export const RegisterPage = () => {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-300">
             Or{' '}
-            <Link to="/login" className="font-medium text-blue-400 hover:text-cyan-400 transition-colors">
+            <Link
+              to="/login"
+              className="font-medium text-blue-400 hover:text-cyan-400 transition-colors"
+            >
               sign in to your existing account
             </Link>
           </p>
@@ -113,15 +131,25 @@ export const RegisterPage = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           {registerError && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start space-x-3">
-              <svg className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <div className="flex-1">
                 <p className="text-sm font-medium text-red-400">{registerError}</p>
               </div>
             </div>
           )}
-          
+
           <div className="space-y-4">
             <FormInput
               label="Full Name"
@@ -132,7 +160,12 @@ export const RegisterPage = () => {
               required
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
                 </svg>
               }
               {...register('name')}
@@ -148,7 +181,12 @@ export const RegisterPage = () => {
               required
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                  />
                 </svg>
               }
               {...register('email')}
@@ -164,7 +202,12 @@ export const RegisterPage = () => {
               required
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
                 </svg>
               }
               {...register('password')}
@@ -179,7 +222,12 @@ export const RegisterPage = () => {
               required
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               }
               {...register('confirmPassword')}
@@ -204,11 +252,10 @@ export const RegisterPage = () => {
           >
             Create account
           </FormButton>
-          
+
           <GoogleLoginButton />
         </form>
       </div>
     </div>
   );
 };
-

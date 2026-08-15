@@ -1,23 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { settingsApi, EmailSettings, SecuritySettings, RateLimitSettings, FileStorageSettings, OAuthSettings } from '../api/settings';
+import { queryKeys } from '../config';
 import { showSuccessToast, showErrorToast } from '../utils/errorHandler';
 import { logger } from '../utils/logger';
-
-/**
- * Query keys for settings
- */
-const settingsKeys = {
-  all: ['settings'] as const,
-  allSettings: () => [...settingsKeys.all, 'all'] as const,
-  category: (category: string) => [...settingsKeys.all, 'category', category] as const,
-};
 
 /**
  * Hook to fetch all settings
  */
 export const useAllSettings = () => {
   return useQuery({
-    queryKey: settingsKeys.allSettings(),
+    queryKey: queryKeys.settings.allSettings(),
     queryFn: () => settingsApi.getAllSettings(),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -32,7 +24,7 @@ export const useUpdateEmailSettings = () => {
   return useMutation({
     mutationFn: (settings: EmailSettings) => settingsApi.updateEmailSettings(settings),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: settingsKeys.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
       logger.userAction('Updated email settings');
       showSuccessToast('Email settings updated successfully');
     },
@@ -52,7 +44,7 @@ export const useUpdateSecuritySettings = () => {
   return useMutation({
     mutationFn: (settings: SecuritySettings) => settingsApi.updateSecuritySettings(settings),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: settingsKeys.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
       logger.userAction('Updated security settings');
       showSuccessToast('Security settings updated successfully');
     },
@@ -72,7 +64,7 @@ export const useUpdateRateLimitSettings = () => {
   return useMutation({
     mutationFn: (settings: RateLimitSettings) => settingsApi.updateRateLimitSettings(settings),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: settingsKeys.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
       logger.userAction('Updated rate limit settings');
       showSuccessToast('Rate limit settings updated successfully');
     },
@@ -92,7 +84,7 @@ export const useUpdateFileStorageSettings = () => {
   return useMutation({
     mutationFn: (settings: FileStorageSettings) => settingsApi.updateFileStorageSettings(settings),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: settingsKeys.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
       logger.userAction('Updated file storage settings');
       showSuccessToast('File storage settings updated successfully');
     },
@@ -112,7 +104,7 @@ export const useUpdateOAuthSettings = () => {
   return useMutation({
     mutationFn: (settings: OAuthSettings) => settingsApi.updateOAuthSettings(settings),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: settingsKeys.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
       logger.userAction('Updated OAuth settings');
       showSuccessToast('OAuth settings updated successfully');
     },
@@ -172,7 +164,7 @@ export const useResetSettings = () => {
   return useMutation({
     mutationFn: (category: string) => settingsApi.resetSettings(category),
     onSuccess: (_, category) => {
-      queryClient.invalidateQueries({ queryKey: settingsKeys.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
       logger.userAction('Reset settings', { category });
       showSuccessToast(`${category} settings reset to defaults`);
     },

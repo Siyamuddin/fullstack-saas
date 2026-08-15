@@ -32,21 +32,25 @@ export const VerifyEmailPage = () => {
         setTimeout(() => {
           navigate('/login');
         }, 2000);
-      } catch (error: any) {
+      } catch (error: unknown) {
         const errorMessage = getErrorMessage(error);
         logger.error('Email verification failed', error, { token: token.substring(0, 10) + '...' });
-        
+
         // Handle specific error cases
         if (errorMessage.toLowerCase().includes('already verified')) {
           setVerifyError('This email has already been verified. You can proceed to login.');
         } else if (errorMessage.toLowerCase().includes('expired')) {
-          setVerifyError('This verification link has expired. Please request a new verification email.');
+          setVerifyError(
+            'This verification link has expired. Please request a new verification email.'
+          );
         } else if (errorMessage.toLowerCase().includes('invalid')) {
-          setVerifyError('This verification link is invalid. Please check your email for the correct link.');
+          setVerifyError(
+            'This verification link is invalid. Please check your email for the correct link.'
+          );
         } else {
           setVerifyError(errorMessage);
         }
-        
+
         showErrorToast(error, errorMessage);
       } finally {
         setIsLoading(false);
@@ -84,7 +88,9 @@ export const VerifyEmailPage = () => {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-white">Email Verified</h2>
-          <p className="text-gray-300">Your email has been verified successfully. Redirecting to login...</p>
+          <p className="text-gray-300">
+            Your email has been verified successfully. Redirecting to login...
+          </p>
         </div>
       </div>
     );
@@ -94,12 +100,7 @@ export const VerifyEmailPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-slate-800/50 backdrop-blur-sm border border-blue-500/20 p-8 rounded-xl shadow-xl text-center">
         <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg
-            className="w-8 h-8 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -109,7 +110,9 @@ export const VerifyEmailPage = () => {
           </svg>
         </div>
         <h2 className="text-2xl font-bold text-white">Verification Failed</h2>
-        <p className="text-gray-300">{verifyError || 'The verification link is invalid or has expired.'}</p>
+        <p className="text-gray-300">
+          {verifyError || 'The verification link is invalid or has expired.'}
+        </p>
         <div className="flex flex-col gap-3 mt-6">
           <Link
             to="/login"
@@ -130,4 +133,3 @@ export const VerifyEmailPage = () => {
     </div>
   );
 };
-

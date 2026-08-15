@@ -1,3 +1,2 @@
 Manifest-Version: 1.0
-Main-Class: com.siyamuddin.blog.blogappapis.BlogAppApisApplication
-
+Main-Class: com.siyamuddin.saas.SaasStarterApplication

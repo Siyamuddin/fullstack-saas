@@ -56,7 +56,7 @@ Instead of building authentication, user management, security, and infrastructur
 
 This is a **production-ready, fullstack SaaS starter kit** designed for rapid development. It provides a complete foundation with:
 
-- **Backend:** Spring Boot 3.2.1 (Java 17) with comprehensive security and user management
+- **Backend:** Spring Boot 3.5.16 (Java 21) with comprehensive security and user management
 - **Frontend:** React 19 with TypeScript, modern UI components, and role-based dashboards
 - **Database:** MySQL 8.0 with automatic schema management
 - **Cache:** Redis for performance optimization
@@ -205,8 +205,8 @@ This is a **production-ready, fullstack SaaS starter kit** designed for rapid de
 
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| **Spring Boot** | 3.2.1 | Main framework |
-| **Java** | 17 | Programming language |
+| **Spring Boot** | 3.5.16 | Main framework |
+| **Java** | 21 | Programming language |
 | **Spring Security** | Latest | Authentication & authorization |
 | **JWT (JJWT)** | 0.11.5 | Token-based authentication |
 | **Spring Data JPA** | Latest | Database access |
@@ -251,7 +251,7 @@ This is a **production-ready, fullstack SaaS starter kit** designed for rapid de
 saas-fullstack/
 ├── saas-springboot/              # Backend (Spring Boot)
 │   ├── src/main/java/
-│   │   └── com/siyamuddin/blog/blogappapis/
+│   │   └── com/siyamuddin/saas/
 │   │       ├── Config/           # Configuration classes
 │   │       │   ├── SecurityConfig.java
 │   │       │   ├── CacheConfig.java
@@ -313,7 +313,7 @@ saas-fullstack/
 
 ### Prerequisites
 
-- **Java 17+** (for backend)
+- **Java 21+** (for backend)
 - **Node.js 18+** (for frontend)
 - **Docker & Docker Compose** (recommended)
 - **MySQL 8.0+** (if not using Docker)
@@ -615,7 +615,7 @@ npm run build
 The application uses **Hibernate DDL auto-update** in development:
 - Entities automatically create/update tables
 - No manual SQL needed for development
-- For production, use `validate` mode and manage migrations manually
+- For production, use Flyway migrations (`src/main/resources/db/migration`) with `ddl-auto=validate`
 
 ### 4. **API Testing**
 

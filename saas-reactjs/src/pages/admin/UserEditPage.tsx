@@ -1,12 +1,10 @@
-import React from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { usersApi } from '../../api/users';
-import { UserDto } from '../../types/user';
-import { showErrorToast, showSuccessToast } from '../../utils/errorHandler';
+import { useUser, useUpdateUser } from '@/hooks';
+import { UserDto } from '@/types/user';
 
 type EditUserFormData = {
   name: string;
@@ -20,30 +18,13 @@ const editUserSchema = z.object({
   about: z.string().max(500, 'About must not exceed 500 characters').optional(),
 });
 
-export const UserEditPage = () => {
+export function UserEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const userId = id ? parseInt(id) : 0;
 
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['user', userId],
-    queryFn: () => usersApi.getUserById(userId),
-    enabled: !!userId,
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (data: Partial<UserDto>) => usersApi.updateUser(userId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      showSuccessToast('User updated successfully');
-      navigate(`/admin/users/${userId}`);
-    },
-    onError: (error: any) => {
-      showErrorToast(error);
-    },
-  });
+  const { data: user, isLoading } = useUser(userId);
+  const updateMutation = useUpdateUser();
 
   const {
     register,
@@ -52,14 +33,16 @@ export const UserEditPage = () => {
     reset,
   } = useForm<EditUserFormData>({
     resolver: zodResolver(editUserSchema),
-    defaultValues: user ? {
-      name: user.name || '',
-      email: user.email || '',
-      about: user.about,
-    } : undefined,
+    defaultValues: user
+      ? {
+          name: user.name || '',
+          email: user.email || '',
+          about: user.about,
+        }
+      : undefined,
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
       reset({
         name: user.name || '',
@@ -70,7 +53,14 @@ export const UserEditPage = () => {
   }, [user, reset]);
 
   const onSubmit = (data: EditUserFormData) => {
-    updateMutation.mutate(data);
+    updateMutation.mutate(
+      { userId, userDto: data as Partial<UserDto> },
+      {
+        onSuccess: () => {
+          navigate(`/admin/users/${userId}`);
+        },
+      }
+    );
   };
 
   if (isLoading) {
@@ -151,5 +141,4 @@ export const UserEditPage = () => {
       </div>
     </div>
   );
-};
-
+}

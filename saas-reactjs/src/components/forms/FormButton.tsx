@@ -12,7 +12,7 @@ interface FormButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 /**
  * Reusable button component with multiple variants and loading state
  */
-export const FormButton: React.FC<FormButtonProps> = ({
+export function FormButton({
   variant = 'primary',
   size = 'md',
   isLoading = false,
@@ -23,7 +23,7 @@ export const FormButton: React.FC<FormButtonProps> = ({
   className = '',
   disabled,
   ...props
-}) => {
+}: FormButtonProps) {
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variantClasses = {
@@ -69,5 +69,5 @@ export const FormButton: React.FC<FormButtonProps> = ({
       )}
     </button>
   );
-};
+}
 

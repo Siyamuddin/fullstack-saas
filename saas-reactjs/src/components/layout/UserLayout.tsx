@@ -1,13 +1,8 @@
-import { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { Link, Outlet } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { AppLogo, UserAvatar, LogoutButton } from './shared';
 
-interface UserLayoutProps {
-  children: ReactNode;
-}
-
-export const UserLayout: React.FC<UserLayoutProps> = ({ children }) => {
+export function UserLayout() {
   const { user } = useAuth();
 
   return (
@@ -25,6 +20,12 @@ export const UserLayout: React.FC<UserLayoutProps> = ({ children }) => {
                 >
                   Profile
                 </Link>
+                <Link
+                  to="/sessions"
+                  className="px-3 py-2 text-gray-300 hover:text-white transition-colors font-medium"
+                >
+                  Sessions
+                </Link>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -36,8 +37,9 @@ export const UserLayout: React.FC<UserLayoutProps> = ({ children }) => {
       </nav>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Outlet />
+      </main>
     </div>
   );
-};
-
+}

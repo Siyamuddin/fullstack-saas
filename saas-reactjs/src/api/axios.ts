@@ -1,6 +1,7 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 import { storage } from '../utils/storage';
 import { showErrorToast } from '../utils/errorHandler';
+import { authNavigate } from '../utils/authNavigate';
 import { API_CONFIG } from '../config';
 
 export const api = axios.create({
@@ -11,9 +12,13 @@ export const api = axios.create({
   },
 });
 
+type RetryableRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+};
+
 // Request interceptor to add JWT token
 api.interceptors.request.use(
-  (config: any) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = storage.getToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -31,10 +36,10 @@ api.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
-    const originalRequest = error.config as any;
+    const originalRequest = error.config as RetryableRequestConfig | undefined;
 
     // Handle 401 Unauthorized - try to refresh token
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
       const refreshToken = storage.getRefreshToken();
@@ -55,16 +60,16 @@ api.interceptors.response.use(
             originalRequest.headers.Authorization = `Bearer ${jwtToken}`;
           }
 
-          return api(originalRequest);
+          return api(originalRequest as AxiosRequestConfig);
         } catch (refreshError) {
           // Refresh failed, logout user
           storage.clear();
-          window.location.href = '/login';
+          authNavigate('/login');
           return Promise.reject(refreshError);
         }
       } else {
         storage.clear();
-        window.location.href = '/login';
+        authNavigate('/login');
       }
     }
 
@@ -84,4 +89,3 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-

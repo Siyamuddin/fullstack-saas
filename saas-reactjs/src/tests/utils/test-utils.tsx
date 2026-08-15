@@ -3,6 +3,8 @@
  * Provides wrapper components and helper functions for testing
  */
 
+/* eslint-disable react-refresh/only-export-components -- test helpers intentionally re-export non-components */
+
 import { ReactElement, ReactNode } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -47,10 +49,7 @@ export const AllProviders = ({ children }: AllProvidersProps) => {
 /**
  * Custom render function that includes all providers
  */
-export const renderWithProviders = (
-  ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) => {
+export const renderWithProviders = (ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) => {
   return render(ui, { wrapper: AllProviders, ...options });
 };
 
@@ -93,10 +92,8 @@ export const mockSession = {
 /**
  * Wait for async updates
  */
-export const waitForAsync = () =>
-  new Promise((resolve) => setTimeout(resolve, 0));
+export const waitForAsync = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 // Re-export everything from testing-library
 export * from '@testing-library/react';
 export { default as userEvent } from '@testing-library/user-event';
-

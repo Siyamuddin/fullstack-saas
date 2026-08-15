@@ -3,61 +3,50 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosHeaders } from 'axios';
 import { getErrorMessage, isPasswordError, isAuthError } from '../errorHandler';
+
+function createAxiosError(
+  status: number,
+  data?: Record<string, unknown>
+): AxiosError {
+  return new AxiosError(
+    'Request failed',
+    String(status),
+    { headers: new AxiosHeaders() },
+    {},
+    {
+      status,
+      statusText: 'Error',
+      headers: {},
+      config: { headers: new AxiosHeaders() },
+      data: data ?? {},
+    }
+  );
+}
 
 describe('errorHandler', () => {
   describe('getErrorMessage', () => {
     it('extracts message from AxiosError response', () => {
-      const error = {
-        isAxiosError: true,
-        response: {
-          data: {
-            message: 'Custom error message',
-          },
-          status: 400,
-        },
-      } as AxiosError;
-
+      const error = createAxiosError(400, { message: 'Custom error message' });
       const message = getErrorMessage(error);
       expect(message).toBe('Custom error message');
     });
 
     it('formats bad credentials error', () => {
-      const error = {
-        isAxiosError: true,
-        response: {
-          data: {
-            message: 'Bad credentials',
-          },
-          status: 401,
-        },
-      } as AxiosError;
-
+      const error = createAxiosError(401, { message: 'Bad credentials' });
       const message = getErrorMessage(error);
       expect(message).toContain('Invalid email or password');
     });
 
     it('handles 404 errors', () => {
-      const error = {
-        isAxiosError: true,
-        response: {
-          status: 404,
-        },
-      } as AxiosError;
-
+      const error = createAxiosError(404);
       const message = getErrorMessage(error);
       expect(message).toContain('not found');
     });
 
     it('handles 500 errors', () => {
-      const error = {
-        isAxiosError: true,
-        response: {
-          status: 500,
-        },
-      } as AxiosError;
-
+      const error = createAxiosError(500);
       const message = getErrorMessage(error);
       expect(message).toContain('Server error');
     });
@@ -93,37 +82,15 @@ describe('errorHandler', () => {
 
   describe('isAuthError', () => {
     it('returns true for 401 errors', () => {
-      const error = {
-        isAxiosError: true,
-        response: {
-          status: 401,
-        },
-      } as AxiosError;
-
-      expect(isAuthError(error)).toBe(true);
+      expect(isAuthError(createAxiosError(401))).toBe(true);
     });
 
     it('returns true for 403 errors', () => {
-      const error = {
-        isAxiosError: true,
-        response: {
-          status: 403,
-        },
-      } as AxiosError;
-
-      expect(isAuthError(error)).toBe(true);
+      expect(isAuthError(createAxiosError(403))).toBe(true);
     });
 
     it('returns false for other errors', () => {
-      const error = {
-        isAxiosError: true,
-        response: {
-          status: 400,
-        },
-      } as AxiosError;
-
-      expect(isAuthError(error)).toBe(false);
+      expect(isAuthError(createAxiosError(400))).toBe(false);
     });
   });
 });
-

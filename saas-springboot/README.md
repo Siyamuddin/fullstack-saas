@@ -18,15 +18,16 @@
 This is a **production-ready Spring Boot 3 SAAS starter kit** that provides a complete foundation for building multi-tenant or single-tenant SAAS applications. It includes user management, authentication, security, file uploads, rate limiting, caching, metrics, and observability features out of the box.
 
 ### Technology Stack
-- **Framework**: Spring Boot 3.2.1
-- **Java Version**: 17
-- **Build Tool**: Maven
-- **Database**: MySQL 8.0 (with Hibernate DDL auto-update)
+- **Framework**: Spring Boot 3.5.16
+- **Java Version**: 21
+- **Build Tool**: Maven (wrapper included: `./mvnw`)
+- **Database**: MySQL 8.0 with Flyway migrations (`src/main/resources/db/migration`)
 - **Cache**: Redis (optional, for caching and rate limiting)
 - **Security**: Spring Security + JWT
 - **Documentation**: OpenAPI 3 / Swagger
 - **Metrics**: Micrometer + Prometheus
 - **File Storage**: Local filesystem or AWS S3
+- **Base package**: `com.siyamuddin.saas`
 
 ### Key Features
 - ✅ JWT Authentication with refresh tokens
@@ -49,7 +50,7 @@ This is a **production-ready Spring Boot 3 SAAS starter kit** that provides a co
 ### Package Structure
 
 ```
-com.siyamuddin.blog.blogappapis/
+com.siyamuddin.saas/
 ├── Config/              # Configuration classes
 │   ├── Properties/      # Configuration property classes
 │   ├── SecurityConfig   # Spring Security configuration
@@ -114,7 +115,7 @@ Key tables:
 
 ### Prerequisites
 
-- Java 17 or higher
+- Java 21 or higher
 - Maven 3.6+ (or use included `mvnw`)
 - MySQL 8.0+ (or use Docker Compose)
 - Redis (optional, for caching and rate limiting)

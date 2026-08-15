@@ -4,10 +4,11 @@ import { usersApi } from '../api/users';
 import { queryKeys, FILE_UPLOAD_CONFIG } from '../config';
 import { showSuccessToast, showErrorToast } from '../utils/errorHandler';
 import { logger } from '../utils/logger';
+import { UserDto } from '../types/user';
 
 interface FileUploadOptions {
-  onSuccess?: (data: any) => void;
-  onError?: (error: any) => void;
+  onSuccess?: (data: UserDto) => void;
+  onError?: (error: unknown) => void;
   maxFileSize?: number;
   allowedTypes?: string[];
 }

@@ -1,38 +1,17 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { usersApi } from '../../api/users';
 import { Link } from 'react-router-dom';
-import { showErrorToast, showSuccessToast } from '../../utils/errorHandler';
+import { useUsers, useUserSearch, useDeleteUser } from '@/hooks';
 
-export const UserManagementPage = () => {
+export function UserManagementPage() {
   const [pageNumber, setPageNumber] = useState(0);
   const [pageSize] = useState(10);
   const [sortBy, setSortBy] = useState('id');
   const [sortDirec, setSortDirec] = useState('asc');
   const [searchTerm, setSearchTerm] = useState('');
-  const queryClient = useQueryClient();
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['users', pageNumber, pageSize, sortBy, sortDirec],
-    queryFn: () => usersApi.getAllUsers(pageNumber, pageSize, sortBy, sortDirec),
-  });
-
-  const { data: searchResults, isLoading: isSearching } = useQuery({
-    queryKey: ['users-search', searchTerm],
-    queryFn: () => usersApi.searchUsers(searchTerm),
-    enabled: searchTerm.length > 0,
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (userId: number) => usersApi.deleteUser(userId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      showSuccessToast('User deleted successfully');
-    },
-    onError: (error: any) => {
-      showErrorToast(error);
-    },
-  });
+  const { data, isLoading, error } = useUsers(pageNumber, pageSize, sortBy, sortDirec);
+  const { data: searchResults, isLoading: isSearching } = useUserSearch(searchTerm);
+  const deleteMutation = useDeleteUser();
 
   const handleDelete = (userId: number, userName: string) => {
     if (window.confirm(`Are you sure you want to delete user "${userName}"?`)) {
@@ -212,4 +191,4 @@ export const UserManagementPage = () => {
       </div>
     </div>
   );
-};
+}

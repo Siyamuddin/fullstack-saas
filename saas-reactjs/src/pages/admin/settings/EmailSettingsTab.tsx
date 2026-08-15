@@ -25,7 +25,7 @@ interface EmailSettingsTabProps {
   onUnsavedChanges: (hasChanges: boolean) => void;
 }
 
-export const EmailSettingsTab: React.FC<EmailSettingsTabProps> = ({ settings, onUnsavedChanges }) => {
+export function EmailSettingsTab({ settings, onUnsavedChanges }: EmailSettingsTabProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isPasswordChanged, setIsPasswordChanged] = useState(false);
 
@@ -204,5 +204,4 @@ export const EmailSettingsTab: React.FC<EmailSettingsTabProps> = ({ settings, on
       </div>
     </form>
   );
-};
-
+}

@@ -11,20 +11,20 @@ const sizeClasses = {
   lg: 'w-12 h-12 text-lg',
 };
 
-export const UserAvatar: React.FC<UserAvatarProps> = ({ 
-  name = 'User', 
+export function UserAvatar({
+  name = 'User',
   size = 'sm',
   showName = false,
-  email
-}) => {
+  email,
+}: UserAvatarProps) {
   const initial = name?.charAt(0).toUpperCase() || 'U';
-  
+
   return (
     <div className="flex items-center space-x-3">
-      <div className={`${sizeClasses[size]} bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center`}>
-        <span className="text-white font-semibold">
-          {initial}
-        </span>
+      <div
+        className={`${sizeClasses[size]} bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center`}
+      >
+        <span className="text-white font-semibold">{initial}</span>
       </div>
       {showName && (
         <div className="hidden md:block">
@@ -34,5 +34,4 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
       )}
     </div>
   );
-};
-
+}

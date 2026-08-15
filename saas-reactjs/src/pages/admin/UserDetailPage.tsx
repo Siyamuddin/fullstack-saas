@@ -1,17 +1,12 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { usersApi } from '../../api/users';
+import { useUser } from '@/hooks';
 
-export const UserDetailPage = () => {
+export function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const userId = id ? parseInt(id) : 0;
 
-  const { data: user, isLoading, error } = useQuery({
-    queryKey: ['user', userId],
-    queryFn: () => usersApi.getUserById(userId),
-    enabled: !!userId,
-  });
+  const { data: user, isLoading, error } = useUser(userId);
 
   if (isLoading) {
     return (
@@ -47,11 +42,7 @@ export const UserDetailPage = () => {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-start space-x-6">
           {user.profileImageUrl ? (
-            <img
-              src={user.profileImageUrl}
-              alt={user.name}
-              className="w-24 h-24 rounded-full"
-            />
+            <img src={user.profileImageUrl} alt={user.name} className="w-24 h-24 rounded-full" />
           ) : (
             <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="text-blue-600 text-3xl font-semibold">
@@ -86,5 +77,4 @@ export const UserDetailPage = () => {
       </div>
     </div>
   );
-};
-
+}

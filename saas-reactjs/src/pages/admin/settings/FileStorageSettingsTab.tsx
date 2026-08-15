@@ -25,7 +25,7 @@ interface FileStorageSettingsTabProps {
   onUnsavedChanges: (hasChanges: boolean) => void;
 }
 
-export const FileStorageSettingsTab: React.FC<FileStorageSettingsTabProps> = ({ settings, onUnsavedChanges }) => {
+export function FileStorageSettingsTab({ settings, onUnsavedChanges }: FileStorageSettingsTabProps) {
   const [showS3Keys, setShowS3Keys] = useState(false);
   const [areKeysChanged, setAreKeysChanged] = useState(false);
 
@@ -223,5 +223,4 @@ export const FileStorageSettingsTab: React.FC<FileStorageSettingsTabProps> = ({ 
       </div>
     </form>
   );
-};
-
+}

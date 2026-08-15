@@ -1,6 +1,6 @@
 # React Frontend Application
 
-A modern, responsive React.js frontend application built with TypeScript, Tailwind CSS, and React Router v6. This application integrates with the Spring Boot backend and provides role-based dashboards for admin and general users.
+A modern, responsive React.js frontend application built with TypeScript, Tailwind CSS, and React Router v7. This application integrates with the Spring Boot backend and provides role-based dashboards for admin and general users.
 
 ## Features
 
@@ -17,7 +17,7 @@ A modern, responsive React.js frontend application built with TypeScript, Tailwi
 
 - **React 19** with TypeScript
 - **Vite** - Build tool
-- **React Router v6** - Routing
+- **React Router v7** - Routing
 - **Tailwind CSS** - Styling
 - **Axios** - HTTP client
 - **React Hook Form** - Form handling
@@ -36,16 +36,19 @@ A modern, responsive React.js frontend application built with TypeScript, Tailwi
 ### Installation
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Create `.env` file from `.env.example`:
+
 ```bash
 cp .env.example .env
 ```
 
 3. Update `.env` with your backend URL:
+
 ```
 VITE_API_BASE_URL=http://localhost:9090
 VITE_APP_NAME=SAAS Starter
@@ -54,6 +57,7 @@ VITE_APP_NAME=SAAS Starter
 ### Development
 
 Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -63,11 +67,13 @@ The application will be available at `http://localhost:5173`
 ### Build
 
 Build for production:
+
 ```bash
 npm run build
 ```
 
 Preview production build:
+
 ```bash
 npm run preview
 ```
@@ -93,6 +99,7 @@ src/
 ## Routes
 
 ### Public Routes
+
 - `/` - Landing page
 - `/login` - Login page
 - `/register` - Registration page
@@ -101,6 +108,7 @@ src/
 - `/verify-email` - Email verification (with token)
 
 ### Admin Routes (ROLE_ADMIN required)
+
 - `/admin/dashboard` - Admin dashboard
 - `/admin/users` - User management
 - `/admin/users/:id` - User details
@@ -109,6 +117,7 @@ src/
 - `/admin/sessions` - Active sessions
 
 ### User Routes (Authenticated)
+
 - `/dashboard` - User dashboard (redirects to profile)
 - `/profile` - User profile
 - `/change-password` - Change password
@@ -117,16 +126,19 @@ src/
 ## Role-Based Access
 
 The application supports two user roles:
+
 - **ROLE_ADMIN** - Full access to admin dashboard and user management
 - **ROLE_NORMAL** - Access to user profile and personal settings
 
 After login, users are automatically redirected based on their role:
+
 - Admins → `/admin/dashboard`
 - Users → `/dashboard` (redirects to `/profile`)
 
 ## API Integration
 
 All API endpoints from the Spring Boot backend are integrated:
+
 - Authentication endpoints (`/api/v1/auth`)
 - Admin user management endpoints (`/api/v1/admin`)
 - User profile endpoints (`/api/v1/users/me`)
